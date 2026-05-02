@@ -27,12 +27,15 @@ export interface SpawnResult {
   cwd: string;
 }
 
+export type DelegateStatusChangeCallback = (id: string, status: string) => void;
+
 export class DelegateSessionManager {
   private pi: ExtensionAPI;
   private registry: Registry;
   private registryData: DelegateRegistry;
   private delegatesDir: string;
   private gitRoot: string | null;
+  private onStatusChange?: DelegateStatusChangeCallback;
 
   /** In-memory map of truly running delegates */
   private activeSessions = new Map<string, AgentSession>();
@@ -44,12 +47,14 @@ export class DelegateSessionManager {
     registryData: DelegateRegistry,
     delegatesDir: string,
     gitRoot: string | null,
+    onStatusChange?: DelegateStatusChangeCallback,
   ) {
     this.pi = pi;
     this.registry = registry;
     this.registryData = registryData;
     this.delegatesDir = delegatesDir;
     this.gitRoot = gitRoot;
+    this.onStatusChange = onStatusChange;
   }
 
   /**
@@ -151,6 +156,7 @@ export class DelegateSessionManager {
       switch (event.type) {
         case "message_start": {
           this.registry.update(this.registryData, id, { status: "running" });
+          this.onStatusChange?.(id, "running");
           break;
         }
         case "message_end": {
@@ -170,6 +176,7 @@ export class DelegateSessionManager {
         }
         case "agent_end": {
           this.registry.update(this.registryData, id, { status: "done" });
+          this.onStatusChange?.(id, "done");
           break;
         }
       }
@@ -203,6 +210,11 @@ export class DelegateSessionManager {
     for (const id of Array.from(this.activeSessions.keys())) {
       this.dispose(id);
     }
+  }
+
+  /** Expose the in-memory active session map (for widget rendering etc.). */
+  getActiveSessions(): Map<string, AgentSession> {
+    return this.activeSessions;
   }
 }
 
