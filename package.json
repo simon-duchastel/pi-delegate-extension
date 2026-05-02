@@ -1,0 +1,18 @@
+{
+  "name": "pi-delegate-extension",
+  "version": "0.1.0",
+  "description": "Pi extension to delegate tasks to subordinate agent sessions",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "^0.72.0",
+    "typebox": "^1.1.24"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.7.3"
+  },
+  "license": "MIT"
+}
